@@ -2,13 +2,13 @@
 
 Transform your mood into music! This project demonstrates cutting-edge AI concepts by generating Spotify playlists based on image or text input.
 
-## 🎯 What You Can Do
+##  What You Can Do
 
 - **Upload a Photo** (breakfast scene, café corner, sunset) → AI analyzes the vibe
 - **Write a Description** of your mood → AI understands your feelings
 - **Get a Custom Playlist** that matches your vibe perfectly
 
-## 🧠 Technical Concepts
+## Technical Concepts
 
 ### Multimodal AI
 The application processes both **image and text** inputs using Claude's Vision API:
@@ -36,7 +36,7 @@ Multi-step integration with Spotify Web API:
 4. **Ranking**: Score tracks based on feature alignment
 5. **Playlist Creation**: Add ranked tracks to a new Spotify playlist
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Python 3.8+
@@ -82,7 +82,7 @@ streamlit run app.py
 
 The app opens at `http://localhost:8501`
 
-## 🏗️ Project Structure
+##  Project Structure
 
 ```
 vibe-playlist-AI/
@@ -95,7 +95,7 @@ vibe-playlist-AI/
 └── README.md                      # This file
 ```
 
-## 📋 Module Overview
+##  Module Overview
 
 ### `vibe_analyzer.py`
 **Multimodal AI for mood detection**
@@ -124,7 +124,7 @@ Returns: Genre recommendations, energy levels, tempo, emotional tags
 - Real-time playlist generation
 - Track listing with feature visualization
 
-## 🔄 Application Flow
+## Application Flow
 
 ```
 User Input (Image/Text)
@@ -144,16 +144,16 @@ Spotify Playlist Generator
 Display Results
 ```
 
-## 💡 Key Features
+## Key Features
 
-✅ **Multimodal Input** - Process images and text  
-✅ **Zero-Shot Learning** - No training required  
-✅ **Smart Ranking** - Match playlists to vibe using audio features  
-✅ **Spotify Integration** - Direct playlist creation and sharing  
-✅ **Real-time UI** - Streamlit for instant feedback  
-✅ **Feature Visualization** - Show energy, tempo, and matching scores  
+**Multimodal Input** - Process images and text  
+**Zero-Shot Learning** - No training required  
+**Smart Ranking** - Match playlists to vibe using audio features  
+**Spotify Integration** - Direct playlist creation and sharing  
+**Real-time UI** - Streamlit for instant feedback  
+**Feature Visualization** - Show energy, tempo, and matching scores  
 
-## 🎓 Learning Outcomes
+##  Learning Outcomes
 
 By studying this project, you'll understand:
 
@@ -166,7 +166,7 @@ By studying this project, you'll understand:
 7. **Ranking Algorithms** - Scoring and sorting strategies
 8. **UI/UX** - Building user-friendly AI applications
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 **"OPENAI_API_KEY not found"**
 - Make sure `.env` file exists in the project root
@@ -184,13 +184,13 @@ By studying this project, you'll understand:
 - Check that you're logged into the same Spotify account
 - The playlist may be private; check your library
 
-## 📚 API Documentation
+##  API Documentation
 
 - [OpenAI Vision API](https://platform.openai.com/docs/guides/vision)
 - [Spotify Web API](https://developer.spotify.com/documentation/web-api)
 - [Streamlit Documentation](https://docs.streamlit.io/)
 
-## 🎨 Customization
+##  Customization
 
 ### Adjust Playlist Length
 In `app.py`, change `num_tracks`:
@@ -213,14 +213,11 @@ Update the prompt in `analyze_image()` and `analyze_text()` to include more genr
 "genres": ["pop", "indie", "electronic", "jazz", "metal", ...]
 ```
 
-## 📝 License
+## License
 
 This project is open source and available for educational purposes.
 
-## 🤝 Contributing
-
-Feel free to fork, improve, and share!
 
 ---
 
-**Happy vibing! 🎵✨**
+**Happy vibing! 
