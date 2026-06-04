@@ -1,6 +1,6 @@
 # 🎵 Vibe-to-Playlist Multimodal AI
 
-Transform your mood into music! This project demonstrates cutting-edge AI concepts by generating Spotify playlists based on image or text input.
+Transform your mood into music! This project demonstrates cutting-edge AI concepts by generating iTunes playlists based on image or text input.
 
 ##  What You Can Do
 
@@ -70,15 +70,15 @@ Classify vibes into music genres without training data:
 streamlit run app.py
 ```
 
-The app opens at `http://localhost:8501`
+The app opens at `http://localhost:8000/docs`
 
 ##  Project Structure
 
 ```
 vibe-playlist-AI/
-├── app.py                          # Streamlit UI & main application
+├── app.py                         # Streamlit UI & main application
 ├── vibe_analyzer.py               # Multimodal vibe analysis (image & text)
-├── itunes_playlist_generator.py   # itunes API integration & playlist creation
+├── iTunes_playlist_generator.py   # iTunes API integration & playlist creation
 ├── requirements.txt               # Python dependencies
 ├── .env.example                   # Environment variables template
 ├── .gitignore                     # Git ignore rules
@@ -96,13 +96,13 @@ vibe-playlist-AI/
 
 Returns: Genre recommendations, energy levels, tempo, emotional tags
 
-### `itunes_playlist_generator.py`
-**Spotify API integration & playlist creation**
+### `iTunes_playlist_generator.py`
+**iTunes playlist creation**
 
-- `itunesPlaylistGenerator.search_tracks()` - Find matching tracks
-- `itunesPlaylistGenerator.get_track_features()` - Retrieve audio features
-- `itunesPlaylistGenerator.rank_tracks_by_vibe()` - ML-based track ranking
-- `itunesPlaylistGenerator.create_playlist()` - Create itunes playlist
+- `iTunesPlaylistGenerator.search_tracks()` - Find matching tracks
+- `iTunesPlaylistGenerator.get_track_features()` - Retrieve audio features
+- `iTunesPlaylistGenerator.rank_tracks_by_vibe()` - ML-based track ranking
+- `iTunesPlaylistGenerator.create_playlist()` - Create iTunes playlist
 
 **Algorithm**: Matches target energy and tempo to track features, ranks by score
 
@@ -125,11 +125,11 @@ Vibe Analyzer (AI)
     ├─ Determine energy level
     └─ Extract keywords
     ↓
-itunes Playlist Generator
+iTunes Playlist Generator
     ├─ Search tracks by genre & keywords
     ├─ Fetch audio features
     ├─ Rank by energy/tempo match
-    └─ Create itunes playlist
+    └─ Create iTunes playlist
     ↓
 Display Results
 ```
@@ -161,10 +161,6 @@ By studying this project, you'll understand:
 **"OPENAI_API_KEY not found"**
 - Make sure `.env` file exists in the project root
 - Verify the API key is correct
-
-**"Spotify credentials not set"**
-- Create a Spotify app at https://developer.spotify.com/dashboard
-- Update `.env` with Client ID and Secret
 
 **"Preview URL not available"**
 - Some tracks don't have preview URLs; this is normal
