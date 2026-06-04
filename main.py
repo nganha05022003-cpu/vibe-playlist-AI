@@ -3,15 +3,17 @@ FastAPI backend for Agentic Vibe-to-Playlist
 
 Endpoints:
 - POST /analyze      : multipart form upload with field `file` (image)
+- POST /analyze-base64 : JSON body with base64-encoded image
 - POST /analyze-text : JSON body with `mood_text`
 
-Both endpoints call `VibeAnalyzer` and `SpotifyPlaylistGenerator` and return
-vibe analysis + Spotify playlist info in JSON.
+All endpoints call `VibeAnalyzer` and `ItunesPlaylistGenerator` and return
+vibe analysis + playlist info in JSON.
 
 Run with: `uvicorn main:app --host 0.0.0.0 --port 8000`
 """
 
 import os
+import base64
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -75,9 +77,13 @@ class MoodText(BaseModel):
     mood_text: str
 
 
+class ImageBase64(BaseModel):
+    image_base64: str
+
+
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)) -> Dict[str, Any]:
-    """Accept an uploaded image, analyze vibe, and create a Spotify playlist."""
+    """Accept an uploaded image, analyze vibe, and create a playlist."""
     suffix = Path(file.filename).suffix if file.filename else ".jpg"
     tmp_path: Optional[str] = None
 
@@ -112,9 +118,45 @@ async def analyze_image(file: UploadFile = File(...)) -> Dict[str, Any]:
                 logger.warning("Failed to delete temporary file: %s", tmp_path)
 
 
+@app.post("/analyze-base64")
+async def analyze_base64(body: ImageBase64) -> Dict[str, Any]:
+    """Accept a base64-encoded image, analyze vibe, and return playlist."""
+    tmp_path: Optional[str] = None
+
+    try:
+        image_bytes = base64.b64decode(body.image_base64)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            tmp_path = tmp.name
+            tmp.write(image_bytes)
+
+        analyzer = get_analyzer()
+        vibe_data = analyzer.analyze_image(tmp_path)
+        vibe_data = analyzer.refine_vibe_analysis(vibe_data)
+
+        generator = get_generator()
+        playlist_result = generator.generate_playlist_from_vibe(vibe_data, num_tracks=20)
+
+        return {
+            "ok": True,
+            "vibe_data": vibe_data,
+            "playlist_result": playlist_result,
+        }
+
+    except Exception as exc:
+        logger.exception("Failed to analyze base64 image")
+        raise HTTPException(status_code=500, detail=str(exc))
+    finally:
+        if tmp_path:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                logger.warning("Failed to delete temporary file: %s", tmp_path)
+
+
 @app.post("/analyze-text")
 async def analyze_text(mood: MoodText) -> Dict[str, Any]:
-    """Accept a JSON mood_text, analyze vibe, and create a Spotify playlist."""
+    """Accept a JSON mood_text, analyze vibe, and create a playlist."""
     try:
         analyzer = get_analyzer()
         vibe_data = analyzer.analyze_text(mood.mood_text)
