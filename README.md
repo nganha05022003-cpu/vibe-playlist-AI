@@ -11,7 +11,7 @@ Transform your mood into music! This project demonstrates cutting-edge AI concep
 ## Technical Concepts
 
 ### Multimodal AI
-The application processes both **image and text** inputs using Claude's Vision API:
+The application processes both **image and text** inputs using OpenAI's Vision API:
 - Images are encoded as base64 and sent to the vision model
 - Text is processed with natural language understanding
 - Both inputs analyzed for emotional and atmospheric context
