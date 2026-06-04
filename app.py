@@ -1,6 +1,6 @@
 """
 Vibe-to-Playlist Multimodal AI Application
-A Streamlit app that generates Spotify playlists based on image or text input
+A Streamlit app that generates playlists based on image or text input
 """
 
 import os
@@ -9,7 +9,7 @@ from pathlib import Path
 import streamlit as st
 from PIL import Image
 from vibe_analyzer import VibeAnalyzer
-from spotify_playlist_generator import SpotifyPlaylistGenerator
+from itunes_playlist_generator import ItunesPlaylistGenerator
 
 # Page configuration
 st.set_page_config(
@@ -58,9 +58,9 @@ def get_vibe_analyzer():
 
 
 @st.cache_resource
-def get_spotify_generator():
-    """Get cached SpotifyPlaylistGenerator instance - reused across button clicks"""
-    return SpotifyPlaylistGenerator()
+def get_itunes_generator():
+    """Get cached ItunesPlaylistGenerator instance - reused across button clicks"""
+    return ItunesPlaylistGenerator()
 
 
 def display_vibe_analysis(vibe_data):
@@ -92,48 +92,40 @@ def display_vibe_analysis(vibe_data):
 
 def display_playlist_result(playlist_result):
     """Display the generated playlist"""
-    playlist = playlist_result.get("playlist", {})
+    playlist_name = playlist_result.get("playlist_name", "Untitled Playlist")
+    tracks = playlist_result.get("tracks", [])
+    total_tracks = playlist_result.get("total_tracks", 0)
 
     st.success("✅ Playlist Created Successfully!")
 
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        st.markdown(f"### 🎼 {playlist.get('name', 'Untitled Playlist')}")
-        st.markdown(f"**Tracks Added:** {playlist.get('tracks_added', 0)}")
-
-        if playlist.get("url"):
-            st.markdown(
-                f"[🎧 Open in Spotify]({playlist['url']})",
-                unsafe_allow_html=True,
-            )
+        st.markdown(f"### 🎼 {playlist_name}")
+        st.markdown(f"**Tracks Found:** {len(tracks)}")
 
     with col2:
-        st.info(f"Total Tracks: {playlist_result.get('total_tracks', 0)}")
+        st.info(f"Total Tracks: {total_tracks}")
 
     # Display track list
     st.markdown("### 📝 Playlist Tracks")
-    tracks = playlist_result.get("tracks", [])
 
     for idx, track in enumerate(tracks, 1):
         with st.container():
-            col1, col2, col3 = st.columns([3, 2, 1])
+            col1, col2 = st.columns([3, 2])
 
             with col1:
-                artists = ", ".join(track.get("artists", ["Unknown"]))
                 st.markdown(f"**{idx}. {track.get('name', 'Unknown')}**")
-                st.markdown(f"*{artists}*", unsafe_allow_html=True)
+                st.markdown(f"*{track.get('artist', 'Unknown Artist')}*", unsafe_allow_html=True)
+                
+                if track.get('album'):
+                    st.caption(f"Album: {track.get('album')}")
 
             with col2:
-                if "features" in track:
-                    features = track["features"]
-                    energy = features.get("energy", 0)
-                    tempo = features.get("tempo", 0)
-                    st.caption(f"🔋 {energy:.0%} | ♪ {tempo:.0f} BPM")
-
-            with col3:
-                score = track.get("score", 0)
-                st.caption(f"Match: {score:.0%}")
+                if track.get('preview_url'):
+                    st.audio(track['preview_url'], format="audio/mp3")
+                if track.get('track_url'):
+                    st.markdown(f"[🎵 Listen on iTunes]({track['track_url']})")
 
             st.divider()
 
@@ -145,7 +137,7 @@ def main():
     # Header
     st.markdown("# 🎵 Vibe to Playlist")
     st.markdown(
-        "Transform your mood into music. Upload a photo or describe your vibe, and let AI generate a custom Spotify playlist."
+        "Transform your mood into music. Upload a photo or describe your vibe, and let AI generate a custom playlist."
     )
 
     st.divider()
@@ -234,10 +226,10 @@ def main():
         st.divider()
 
         # Generate playlist button
-        if st.button("🎼 Generate Spotify Playlist", key="generate_playlist_btn"):
+        if st.button("🎼 Generate Playlist", key="generate_playlist_btn"):
             with st.spinner("Creating your playlist..."):
                 try:
-                    generator = get_spotify_generator()
+                    generator = get_itunes_generator()
                     playlist_result = generator.generate_playlist_from_vibe(
                         st.session_state.vibe_data, num_tracks=20
                     )
@@ -245,9 +237,7 @@ def main():
                     st.rerun()
 
                 except Exception as e:
-                    st.error(
-                        f"Error generating playlist: {str(e)}\n\nMake sure your Spotify credentials are set in .env"
-                    )
+                    st.error(f"Error generating playlist: {str(e)}")
 
     # Display generated playlist
     if st.session_state.playlist_result:
@@ -269,13 +259,13 @@ def main():
         1. **Upload Image or Text** - Share your vibe
         2. **AI Analysis** - Multimodal AI analyzes the mood
         3. **Music Matching** - Identifies genres and audio features
-        4. **Spotify Playlist** - Generates a custom playlist
+        4. **Playlist Generation** - Generates a custom playlist via iTunes API
         
         **Technologies:**
         - 🤖 OpenAI Vision for image analysis
         - 📊 Zero-shot classification for mood detection
-        - 🎵 Spotify Web API for playlist creation
-        - 🔊 Audio feature matching algorithm
+        - 🎵 iTunes Search API for music discovery
+        - 🔊 Vibe-based track matching algorithm
         """
         )
 
@@ -287,20 +277,14 @@ def main():
         else:
             st.success("✓ OpenAI API connected")
 
-        if not os.getenv("SPOTIFY_CLIENT_ID"):
-            st.error("⚠️ Spotify credentials not set")
-        else:
-            st.success("✓ Spotify connected")
-
         st.divider()
 
         st.markdown(
             """
         **Setup Instructions:**
         1. Get API keys from [OpenAI](https://platform.openai.com/api-keys)
-        2. Create a Spotify app at [developer.spotify.com](https://developer.spotify.com)
-        3. Create a `.env` file with your credentials
-        4. Run: `streamlit run app.py`
+        2. Create a `.env` file with your credentials
+        3. Run: `streamlit run app.py`
         """
         )
 
