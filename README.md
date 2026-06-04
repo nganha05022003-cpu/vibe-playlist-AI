@@ -268,7 +268,7 @@ Normal behavior — not all iTunes tracks have 30-second previews. The playlist 
 
 Built as a portfolio project demonstrating AI product thinking, technical literacy, and the ability to ship end-to-end.
 
-[LinkedIn](https://linkedin.com) · [GitHub](https://github.com/nganha05022003-cpu)
+[LinkedIn](https://www.linkedin.com/in/hanguyen0502/) · [GitHub](https://github.com/nganha05022003-cpu)
 
 ---
 
