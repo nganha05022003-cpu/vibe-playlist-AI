@@ -15,9 +15,12 @@ Run with: `uvicorn main:app --host 0.0.0.0 --port 8000`
 import os
 import base64
 import tempfile
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Optional
 import logging
+
+from PIL import Image
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -83,7 +86,7 @@ class ImageBase64(BaseModel):
 
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)) -> Dict[str, Any]:
-    """Accept an uploaded image, analyze vibe, and create a playlist."""
+    """Accept an uploaded image, analyze vibe, and create a Spotify playlist."""
     suffix = Path(file.filename).suffix if file.filename else ".jpg"
     tmp_path: Optional[str] = None
 
@@ -126,9 +129,16 @@ async def analyze_base64(body: ImageBase64) -> Dict[str, Any]:
     try:
         image_bytes = base64.b64decode(body.image_base64)
 
+        img = Image.open(BytesIO(image_bytes)).convert("RGB")
+        max_side = 800
+        w, h = img.size
+        if max(w, h) > max_side:
+            scale = max_side / max(w, h)
+            img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
             tmp_path = tmp.name
-            tmp.write(image_bytes)
+            img.save(tmp, format="JPEG", quality=85)
 
         analyzer = get_analyzer()
         vibe_data = analyzer.analyze_image(tmp_path)
@@ -156,7 +166,7 @@ async def analyze_base64(body: ImageBase64) -> Dict[str, Any]:
 
 @app.post("/analyze-text")
 async def analyze_text(mood: MoodText) -> Dict[str, Any]:
-    """Accept a JSON mood_text, analyze vibe, and create a playlist."""
+    """Accept a JSON mood_text, analyze vibe, and create a Spotify playlist."""
     try:
         analyzer = get_analyzer()
         vibe_data = analyzer.analyze_text(mood.mood_text)
