@@ -28,20 +28,12 @@ Classify vibes into music genres without training data:
 - Energy levels → Audio feature targets (high energy → 0.7+)
 - Tempo mapping → BPM targets for playlist matching
 
-### Spotify API Integration
-Multi-step integration with Spotify Web API:
-1. **Authentication**: OAuth2 flow for secure access
-2. **Search**: Find tracks matching vibe keywords and genres
-3. **Audio Features**: Retrieve energy, tempo, danceability, etc.
-4. **Ranking**: Score tracks based on feature alignment
-5. **Playlist Creation**: Add ranked tracks to a new Spotify playlist
 
 ##  Getting Started
 
 ### Prerequisites
 - Python 3.8+
 - OpenAI API key ([get here](https://platform.openai.com/api-keys))
-- Spotify Developer account ([create app here](https://developer.spotify.com/dashboard))
 
 ### Installation
 
@@ -69,9 +61,7 @@ Multi-step integration with Spotify Web API:
 5. **Edit `.env` with your credentials:**
    ```
    OPENAI_API_KEY=your_openai_api_key
-   SPOTIFY_CLIENT_ID=your_spotify_client_id
-   SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-   SPOTIFY_REDIRECT_URI=http://localhost:8501/callback
+ 
    ```
 
 ### Running the App
@@ -88,7 +78,7 @@ The app opens at `http://localhost:8501`
 vibe-playlist-AI/
 ├── app.py                          # Streamlit UI & main application
 ├── vibe_analyzer.py               # Multimodal vibe analysis (image & text)
-├── spotify_playlist_generator.py   # Spotify API integration & playlist creation
+├── itunes_playlist_generator.py   # itunes API integration & playlist creation
 ├── requirements.txt               # Python dependencies
 ├── .env.example                   # Environment variables template
 ├── .gitignore                     # Git ignore rules
@@ -102,17 +92,17 @@ vibe-playlist-AI/
 
 - `VibeAnalyzer.analyze_image(image_path)` - Vision API analysis
 - `VibeAnalyzer.analyze_text(text)` - Text sentiment analysis
-- `VibeAnalyzer.refine_vibe_analysis(vibe_data)` - Enhance with Spotify features
+- `VibeAnalyzer.refine_vibe_analysis(vibe_data)` - Enhance with itunes features
 
 Returns: Genre recommendations, energy levels, tempo, emotional tags
 
-### `spotify_playlist_generator.py`
+### `itunes_playlist_generator.py`
 **Spotify API integration & playlist creation**
 
-- `SpotifyPlaylistGenerator.search_tracks()` - Find matching tracks
-- `SpotifyPlaylistGenerator.get_track_features()` - Retrieve audio features
-- `SpotifyPlaylistGenerator.rank_tracks_by_vibe()` - ML-based track ranking
-- `SpotifyPlaylistGenerator.create_playlist()` - Create Spotify playlist
+- `itunesPlaylistGenerator.search_tracks()` - Find matching tracks
+- `itunesPlaylistGenerator.get_track_features()` - Retrieve audio features
+- `itunesPlaylistGenerator.rank_tracks_by_vibe()` - ML-based track ranking
+- `itunesPlaylistGenerator.create_playlist()` - Create itunes playlist
 
 **Algorithm**: Matches target energy and tempo to track features, ranks by score
 
@@ -135,11 +125,11 @@ Vibe Analyzer (AI)
     ├─ Determine energy level
     └─ Extract keywords
     ↓
-Spotify Playlist Generator
+itunes Playlist Generator
     ├─ Search tracks by genre & keywords
     ├─ Fetch audio features
     ├─ Rank by energy/tempo match
-    └─ Create Spotify playlist
+    └─ Create itunes playlist
     ↓
 Display Results
 ```
@@ -149,7 +139,7 @@ Display Results
 **Multimodal Input** - Process images and text  
 **Zero-Shot Learning** - No training required  
 **Smart Ranking** - Match playlists to vibe using audio features  
-**Spotify Integration** - Direct playlist creation and sharing  
+**Itunes Integration** - Direct playlist creation and sharing  
 **Real-time UI** - Streamlit for instant feedback  
 **Feature Visualization** - Show energy, tempo, and matching scores  
 
@@ -180,14 +170,10 @@ By studying this project, you'll understand:
 - Some tracks don't have preview URLs; this is normal
 - Playlists still create successfully
 
-**Playlist not showing up in Spotify**
-- Check that you're logged into the same Spotify account
-- The playlist may be private; check your library
 
 ##  API Documentation
 
 - [OpenAI Vision API](https://platform.openai.com/docs/guides/vision)
-- [Spotify Web API](https://developer.spotify.com/documentation/web-api)
 - [Streamlit Documentation](https://docs.streamlit.io/)
 
 ##  Customization
