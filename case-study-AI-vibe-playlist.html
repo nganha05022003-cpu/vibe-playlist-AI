@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>case study — vibe-to-playlist</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:          #f0ece4;
+    --bg-card:     #ebe6dc;
+    --bg-mist:     #e4e0d6;
+    --ink:         #2a2620;
+    --ink-mid:     #4a4438;
+    --ink-soft:    #7a7060;
+    --ink-faint:   #a09888;
+    --moss:        #5c6b52;
+    --moss-light:  #dce4d8;
+    --silver:      #8a9398;
+    --silver-light:#e8ecee;
+    --birch:       #c4a96a;
+    --birch-light: #f4edd8;
+    --fog:         #b8bfc4;
+    --fog-light:   #eceef0;
+    --border:      #ccc8be;
+    --shadow:      0 1px 12px rgba(42,38,32,.07);
+    --shadow-deep: 0 3px 24px rgba(42,38,32,.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+    position: relative;
+  }
+
+  /* ── GRAIN TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: .03;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 4rem 2.5rem 5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    text-align: center;
+    padding-bottom: 3rem;
+    margin-bottom: 3rem;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--birch), transparent);
+    margin: 0 auto;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+  }
+
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .62rem;
+    font-weight: 500;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--birch);
+    margin-bottom: 1.4rem;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 6vw, 3.4rem);
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: .8rem;
+    letter-spacing: .01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--moss);
+    font-weight: 400;
+  }
+
+  .subtitle {
+    font-size: .9rem;
+    color: var(--ink-soft);
+    max-width: 520px;
+    margin: 0 auto 1.8rem;
+    font-weight: 300;
+    line-height: 1.7;
+    font-style: italic;
+    font-family: 'EB Garamond', serif;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    font-size: .65rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .meta-item span {
+    display: block;
+    color: var(--ink-mid);
+    font-weight: 400;
+    font-family: 'EB Garamond', serif;
+    font-size: .9rem;
+    letter-spacing: .03em;
+    margin-top: 3px;
+    text-transform: none;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .6rem;
+    font-weight: 500;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: .6rem;
+  }
+
+  .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: .8rem;
+    letter-spacing: .01em;
+    line-height: 1.3;
+  }
+
+  h2 em {
+    font-style: italic;
+    color: var(--moss);
+  }
+
+  p {
+    color: var(--ink-mid);
+    font-size: .9rem;
+    margin-bottom: .7rem;
+    font-weight: 300;
+    line-height: 1.85;
+  }
+
+  p strong {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  /* ── QUOTE ── */
+  .quote {
+    background: var(--bg-card);
+    border-radius: 4px;
+    padding: 1.3rem 1.8rem;
+    margin: 1.2rem 0;
+    position: relative;
+    border-left: 2px solid var(--birch);
+  }
+
+  .quote::before {
+    content: '\201C';
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    color: var(--birch);
+    opacity: .4;
+    position: absolute;
+    top: -.2rem;
+    left: 1rem;
+    line-height: 1;
+  }
+
+  .quote p {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: .98rem;
+    color: var(--ink-mid);
+    margin: 0;
+    line-height: 1.7;
+    padding-left: .8rem;
+  }
+
+  .quote.moss { border-left-color: var(--moss); }
+  .quote.moss::before { color: var(--moss); }
+  .quote.silver { border-left-color: var(--silver); }
+  .quote.silver::before { color: var(--silver); }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    flex-wrap: wrap;
+    margin: 1.4rem 0;
+  }
+
+  .flow-step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .38rem .9rem;
+    font-size: .75rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .flow-step.lit {
+    background: var(--moss-light);
+    border-color: var(--moss);
+    color: var(--moss);
+    font-weight: 500;
+  }
+
+  .flow-arrow {
+    color: var(--ink-faint);
+    font-size: .75rem;
+    line-height: 1;
+  }
+
+  /* ── PIVOT GRID ── */
+  .pivot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.4rem 0;
+  }
+
+  .pivot-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.1rem 1.3rem;
+  }
+
+  .pivot-card.before {
+    border-top: 2px solid var(--fog);
+  }
+
+  .pivot-card.after {
+    border-top: 2px solid var(--moss);
+  }
+
+  .pivot-label {
+    font-size: .58rem;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: .5rem;
+  }
+
+  .pivot-card.before .pivot-label { color: var(--fog); }
+  .pivot-card.after .pivot-label { color: var(--moss); }
+
+  .pivot-card p {
+    font-size: .83rem;
+    margin-bottom: .3rem;
+    line-height: 1.6;
+  }
+
+  /* ── TABLE ── */
+  .case-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.4rem 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .case-table th {
+    font-size: .58rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: .7rem 1.1rem;
+    background: var(--bg-mist);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .case-table td {
+    padding: .8rem 1.1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-mid);
+    font-size: .83rem;
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  .case-table tr:last-child td { border-bottom: none; }
+
+  .case-table td:first-child {
+    color: var(--ink);
+    font-weight: 400;
+    font-family: 'EB Garamond', serif;
+    font-size: .95rem;
+  }
+
+  /* ── TAGS ── */
+  .tag {
+    display: inline-block;
+    font-size: .65rem;
+    font-weight: 400;
+    padding: 2px 9px;
+    border-radius: 2px;
+    margin: 2px 2px;
+    letter-spacing: .04em;
+  }
+
+  .tag-moss    { background: var(--moss-light); color: var(--moss); }
+  .tag-birch   { background: var(--birch-light); color: #9b7a2a; }
+  .tag-silver  { background: var(--silver-light); color: var(--silver); }
+  .tag-fog     { background: var(--fog-light); color: #5a6870; }
+
+  /* ── STACK ROW ── */
+  .stack-row {
+    display: flex;
+    gap: .45rem;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+
+  .stack-item {
+    background: var(--bg-mist);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: .3rem .7rem;
+    font-size: .7rem;
+    font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: .03em;
+  }
+
+  /* ── LINKS ── */
+  .links-row {
+    display: flex;
+    gap: .9rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    justify-content: center;
+  }
+
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .6rem 1.5rem;
+    border-radius: 2px;
+    font-size: .78rem;
+    font-weight: 400;
+    text-decoration: none;
+    letter-spacing: .06em;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .link-btn.primary {
+    background: var(--moss);
+    color: #f4f0e8;
+  }
+
+  .link-btn.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+  }
+
+  /* ── ORNAMENT DIVIDER ── */
+  .ornament {
+    text-align: center;
+    color: var(--birch);
+    font-size: .85rem;
+    letter-spacing: .4em;
+    margin: 2rem 0 1.5rem;
+    opacity: .6;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.8rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .footer p {
+    font-size: .72rem;
+    color: var(--ink-faint);
+    font-weight: 400;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+  }
+
+  .footer .glyph {
+    display: block;
+    color: var(--birch);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: .4rem;
+    opacity: .7;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 580px) {
+    .page { padding: 2.5rem 1.4rem 3.5rem; }
+    .pivot-grid { grid-template-columns: 1fr; }
+    .meta-row { gap: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="eyebrow">✦ product case study</div>
+    <h1>vibe-to-playlist<br><em>building an agentic AI</em><br>music experience</h1>
+    <p class="subtitle">how I went from "upload a photo on a website" to "one tap on iPhone, playlist appears" — and every product decision in between.</p>
+    <div class="meta-row">
+      <div class="meta-item">role <span>solo PM & builder</span></div>
+      <div class="meta-item">timeline <span>30 days</span></div>
+      <div class="meta-item">stack <span>python · fastapi · gpt-4o · itunes</span></div>
+      <div class="meta-item">status <span>shipped & live ✦</span></div>
+    </div>
+  </div>
+
+  <!-- 01 PROBLEM -->
+  <div class="section">
+    <div class="section-label">01 — problem <span class="rule"></span></div>
+    <h2>mood is visual, not verbal</h2>
+    <p>every music app starts with a search bar. but mood doesn't work that way — you can <em>see</em> a vibe in a rainy café window or a golden-hour rooftop, but you can't always translate that into keywords like "chill indie acoustic."</p>
+    <p>the gap: there's no way to go from a <strong>visual moment</strong> to a <strong>matching soundtrack</strong> without manually describing your feelings in words.</p>
+    <div class="quote">
+      <p>"I know the feeling I want, but I don't have the words for it — and the search bar doesn't understand vibes."</p>
+    </div>
+  </div>
+
+  <!-- 02 INSIGHT -->
+  <div class="section">
+    <div class="section-label">02 — insight <span class="rule"></span></div>
+    <h2>multimodal AI can bridge the gap</h2>
+    <p>GPT-4o Vision can "see" an image and extract structured emotional data — mood, energy level, atmosphere, and even musical genre associations. this means an AI can do what humans struggle to do: <strong>translate a visual scene into a set of musical parameters.</strong></p>
+    <p>the hypothesis: if I feed a photo to a vision model, it can generate search terms accurate enough to find matching music — without the user typing a single word.</p>
+  </div>
+
+  <!-- 03 FIRST SOLUTION -->
+  <div class="section">
+    <div class="section-label">03 — first solution <span class="rule"></span></div>
+    <h2>a streamlit web app with spotify</h2>
+    <p>version 1 was a browser-based app: upload a photo → GPT-4o analyzes the mood → Spotify API creates a playlist in the user's account.</p>
+    <div class="flow">
+      <span class="flow-step">open browser</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">navigate to URL</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">upload photo</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">wait for AI</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">click "generate"</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">open spotify</span>
+    </div>
+    <p>it worked. but two critical problems emerged immediately.</p>
+  </div>
+
+  <!-- 04 FEEDBACK -->
+  <div class="section">
+    <div class="section-label">04 — what I discovered <span class="rule"></span></div>
+    <h2>too much friction, and a platform wall</h2>
+    <p><strong>problem 1: friction.</strong> six steps from "I see a vibe" to "I hear matching music." every extra tap is a chance for the user to drop off. browser-based upload felt clunky compared to the immediacy of the mood itself.</p>
+    <p><strong>problem 2: spotify's policy shift.</strong> in february 2026, Spotify changed their developer mode policy — all API access now requires the app owner to have Premium. this meant every user would face an authentication wall and subscription requirement.</p>
+    <div class="quote silver">
+      <p>spotify's platform risk materialized in real-time: a third-party dependency I had no control over changed the rules mid-build. this is exactly the kind of risk PMs need to evaluate when choosing external dependencies.</p>
+    </div>
+  </div>
+
+  <!-- 05 PIVOT -->
+  <div class="section">
+    <div class="section-label">05 — pivot decision <span class="rule"></span></div>
+    <h2>from web app to <em>agentic system</em></h2>
+    <p>two simultaneous pivots, each driven by a different insight:</p>
+    <div class="pivot-grid">
+      <div class="pivot-card before">
+        <div class="pivot-label">before</div>
+        <p><strong>spotify API</strong></p>
+        <p>requires premium, oauth flow, user login, subscription check</p>
+      </div>
+      <div class="pivot-card after">
+        <div class="pivot-label">after</div>
+        <p><strong>iTunes search API</strong></p>
+        <p>free, no auth, no login, 30-second preview URLs included</p>
+      </div>
+      <div class="pivot-card before">
+        <div class="pivot-label">before</div>
+        <p><strong>streamlit web app</strong></p>
+        <p>6 steps, browser-dependent, desktop-first experience</p>
+      </div>
+      <div class="pivot-card after">
+        <div class="pivot-label">after</div>
+        <p><strong>iPhone shortcut + fastAPI</strong></p>
+        <p>1 tap, native camera, zero-friction mobile experience</p>
+      </div>
+    </div>
+    <p>the architecture shift was fundamental: instead of a web page that waits for user input at every step, I built an <strong>agentic pipeline</strong> — one trigger sets off a chain of autonomous AI decisions with zero additional user interaction.</p>
+    <div class="flow">
+      <span class="flow-step lit">📸 snap photo</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step lit">🤖 AI reads mood</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step lit">🎵 finds tracks</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step lit">🔔 notification</span>
+    </div>
+  </div>
+
+  <!-- 06 ARCHITECTURE -->
+  <div class="section">
+    <div class="section-label">06 — final architecture <span class="rule"></span></div>
+    <h2>three interfaces, one brain</h2>
+    <p>the final system has a single fastAPI backend that serves three different interfaces — each optimized for a different context:</p>
+    <table class="case-table">
+      <thead>
+        <tr><th>interface</th><th>use case</th><th>tech</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>iPhone shortcut</td>
+          <td>primary experience — one-tap photo to playlist</td>
+          <td><span class="tag tag-moss">iOS shortcuts</span></td>
+        </tr>
+        <tr>
+          <td>streamlit web app</td>
+          <td>desktop demo for interviews & screen sharing</td>
+          <td><span class="tag tag-silver">streamlit cloud</span></td>
+        </tr>
+        <tr>
+          <td>swagger API docs</td>
+          <td>developer documentation & direct API testing</td>
+          <td><span class="tag tag-birch">fastAPI /docs</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="stack-row">
+      <span class="stack-item">python 3.11</span>
+      <span class="stack-item">fastAPI</span>
+      <span class="stack-item">GPT-4o vision</span>
+      <span class="stack-item">iTunes search API</span>
+      <span class="stack-item">streamlit</span>
+      <span class="stack-item">render</span>
+      <span class="stack-item">iPhone shortcuts</span>
+    </div>
+  </div>
+
+  <!-- 07 RESULTS -->
+  <div class="section">
+    <div class="section-label">07 — results & AI learnings <span class="rule"></span></div>
+    <h2>what I built, and what I learned</h2>
+    <table class="case-table">
+      <thead>
+        <tr><th>AI concept</th><th>how I encountered it</th><th>PM takeaway</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>non-deterministic output</td>
+          <td>GPT-4o returned different mood analysis for the same image across calls</td>
+          <td><span class="tag tag-fog">design for "good enough," not exact</span></td>
+        </tr>
+        <tr>
+          <td>prompt engineering</td>
+          <td>small changes in system prompt dramatically changed JSON quality</td>
+          <td><span class="tag tag-birch">prompt design is a product skill</span></td>
+        </tr>
+        <tr>
+          <td>platform dependency risk</td>
+          <td>spotify changed API policy mid-project, breaking core functionality</td>
+          <td><span class="tag tag-silver">evaluate platform risk as seriously as tech risk</span></td>
+        </tr>
+        <tr>
+          <td>latency as UX</td>
+          <td>free-tier cold starts added 30–50s delay, causing shortcut timeouts</td>
+          <td><span class="tag tag-moss">infra cost directly impacts user experience</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="quote moss">
+      <p>the most important learning: AI automates the how of execution more readily than the why. strategic framing — which problem to solve, which platform to build on, which trade-offs to accept — remained entirely human decisions throughout.</p>
+    </div>
+  </div>
+
+  <!-- 08 NEXT -->
+  <div class="section">
+    <div class="section-label">08 — what I'd do differently <span class="rule"></span></div>
+    <h2>next iteration</h2>
+    <p><strong>evaluate platform policies before building.</strong> I spent significant time integrating spotify before discovering their policy change. in a real product team, I would have validated API terms and access requirements in the first sprint.</p>
+    <p><strong>start with mobile-first architecture.</strong> I began with a desktop web app and later pivoted to iPhone shortcut. if I started over, I would design the agentic mobile experience from day one.</p>
+    <p><strong>add a feedback loop.</strong> currently the AI suggests tracks but the user can't tell the system "this doesn't match." a lightweight thumbs-up/thumbs-down mechanism would create a feedback signal for iterating on prompt quality — and demonstrate understanding of RLHF concepts.</p>
+  </div>
+
+  <!-- LINKS -->
+  <div class="section" style="text-align:center">
+    <div class="links-row">
+      <a href="https://vibe-playlist-ai.onrender.com/docs" class="link-btn primary" target="_blank">live API ↗</a>
+      <a href="https://vibe-playlist-ai-06-2026.streamlit.app/" class="link-btn secondary" target="_blank">web demo ↗</a>
+      <a href="https://github.com/nganha05022003-cpu/vibe-playlist-AI" class="link-btn secondary" target="_blank">github ↗</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="glyph">✦</span>
+    <p>built by ha nguyen · 2026</p>
+  </div>
+
+</div>
+</body>
+</html>
